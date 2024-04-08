@@ -17,6 +17,7 @@ class BinutilsBuilder(Builder):
         self.cflags = ['-O2']
         self.configure_flags = [
             '--disable-compressed-debug-sections',
+            '--disable-docs',
             '--disable-gdb',
             '--disable-nls',
             '--disable-werror',
