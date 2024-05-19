@@ -536,14 +536,14 @@ class LLVMSourceManager:
         if self.repo.exists():
             return
 
-        tc_build.utils.print_header('Downloading LLVM')
+        tc_build.utils.print_header('Downloading Liilium LLVM Fork')
 
         git_clone = ['git', 'clone']
         if shallow:
             git_clone.append('--depth=1')
             if ref != 'main':
                 git_clone.append('--no-single-branch')
-        git_clone += ['https://github.com/llvm/llvm-project', self.repo]
+        git_clone += ['https://github.com/liliumproject/llvm-project', self.repo]
 
         subprocess.run(git_clone, check=True)
 
