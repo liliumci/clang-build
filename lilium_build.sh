@@ -49,16 +49,22 @@ bash ci.sh deps
 # Build LLVM
 echo "* Building LLVM..."
 ./build-llvm.py \
+    --assertions \
+    --build-stage1-only \
+    --build-target distribution \
+    --install-target distribution \
     --vendor-string "Lilium" \
     --bolt \
     --defines LLVM_PARALLEL_COMPILE_JOBS=$(nproc --all) LLVM_PARALLEL_LINK_JOBS=$(nproc --all) CMAKE_C_FLAGS="-O2" CMAKE_CXX_FLAGS="-O2" \
     --projects clang compiler-rt lld polly \
     --targets ARM AArch64 X86 \
+    --llvm-folder "${DIR}/src/llvm-project" \
     --lto thin \
     --pgo llvm \
     --quiet-cmake \
     --install-folder "install" \
     --no-update | tee "${BUILD_LOG}"
+
 
 # Verify clang get built
 [ ! -f install/bin/clang* ] && {
