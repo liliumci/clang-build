@@ -11,9 +11,11 @@ DIR="$(pwd)"
 BUILD_LOG="$DIR/build_log.txt"
 LLVM_BUILDATE=$(date +'%Y%m%d')
 
+GH_RELEASE_SH=$DIR/upload_release.sh
+
 # Function to show an informational message
 msg() {
-    echo -e "\e[1;32m$*\e[0m"
+    echo -e "\033[0;36m$*\033[0m"
 }
 
 err() {
@@ -43,11 +45,15 @@ send_file() {
 send_msg "<B>Lilium Toolchain Build Started!</b>"$'\n'$'\n'"Date: $(date)"
 
 # Install dependency
-msg "* Installing bullding dependencies..."
+msg "========================================="
+msg "== Installing bullding dependencies    =="
+msg "========================================="
 bash ci.sh deps
 
 # Build LLVM
-echo "* Building LLVM..."
+msg "========================================="
+msg "== Building LLVM                       =="
+msg "========================================="
 ./build-llvm.py \
     --assertions \
     --build-stage1-only \
@@ -67,30 +73,36 @@ echo "* Building LLVM..."
 
 # Verify clang get built
 [ ! -f install/bin/clang* ] && {
-	err "* LLVM Building Failed"
+    err "========================================="
+    err "== Failed building LLVM                 =="
+    err "========================================="
         send_file "$BUILD_LOG" "<b>Lilium Toolchain Build Failed!</b>"
 	exit 1
 }
 
 # Build binutils
-echo "* Building binutils..."
+msg "========================================="
+msg "== Building binutils                   =="
+msg "========================================="
 ./build-binutils.py \
     --install-folder "install" \
     --targets arm aarch64 x86_64
     
 # Remove unused products
-echo "* Removing unused products..."
+msg "========================================="
+msg "== Preparing binaries                  =="
+msg "========================================="
 rm -fr install/include
 rm -f install/lib/*.a install/lib/*.la
 
 # Strip remaining products
-echo "* Stripping remaining products..."
+echo "Stripping remaining products..."
 for f in $(find install -type f -exec file {} \; | grep 'not stripped' | awk '{print $1}'); do
 	strip ${f: : -1}
 done
 
 # Set executable rpaths so setting LD_LIBRARY_PATH isn't necessary
-echo "* Setting library load paths for portability..."
+echo "Setting library load paths for portability..."
 for bin in $(find install -mindepth 2 -maxdepth 3 -type f -exec file {} \; | grep 'ELF .* interpreter' | awk '{print $1}'); do
 	# Remove last character from file output (':')
 	bin="${bin: : -1}"
@@ -107,12 +119,31 @@ mv install/* product/
 # Create Commit
 cd product/
 
+msg "========================================="
+msg "== Compressing output                  =="
+msg "========================================="
 # Compress Everythng
 tar -czvf lilium_clang-$LLVM_BUILDATE.tar.gz *
 
+# Verify clang get built
+[ ! -f lilium_clang-*.tar.gz ] && {
+    err "========================================="
+    err "== Output missing!                     =="
+    err "========================================="
+        send_file "$BUILD_LOG" "<b>Lilium Toolchain Build Failed!</b>"
+	exit 1
+}
+
+msg "========================================="
+msg "== Create and upload to GitHub Release =="
+msg "========================================="
 # Upload Build Artifact to GitHub Release
-./upload_release.sh "$LLVM_BUILDATE" "$GH_TOKEN" "liliumproject" "clang" "lilium_clang-$LLVM_BUILDATE.tar.gz"
+bash $GH_RELEASE_SH "$LLVM_BUILDATE" "$GH_TOKEN" "liliumproject" "clang" "lilium_clang-$LLVM_BUILDATE.tar.gz"
 
 # Send Notification
 GH_RELEASE_LINK="https://github.com/liliumproject/clang/releases/tag/$LLVM_BUILDATE"
 send_msg "<B>Lilium Toolchain Build Complete!</b>"$'\n'$'\n'"<a href='${GH_RELEASE_LINK}'>Download</a>"
+
+msg "========================================="
+msg "== Build completed!                    =="
+msg "========================================="
