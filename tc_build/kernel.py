@@ -299,7 +299,7 @@ class S390KernelBuilder(KernelBuilder):
         return True
 
     def needs_binutils(self):
-        return True
+        return 'LD' in self.make_variables or 'OBJCOPY' in self.make_variables
 
 
 class X8664KernelBuilder(KernelBuilder):
