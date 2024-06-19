@@ -1,0 +1,17 @@
+env:
+  GH_TOKEN: ENCRYPTED[3667afacd04ac402d09e732073a5f28344bd725a7125da57dc585197955e99ede03352c7a15adc5faf74cbb9d9b3a881]
+  TELEGRAM_TOKEN: ENCRYPTED[16c4223b888608ad59f2784110a11cfc49f7fd911a6549665ffbffa31eeded8f2e052721c0539086ae6d8f69659e185a]
+  TELEGRAM_CHAT: ENCRYPTED[7bc5bab47e983bfe5a24ee8b70486aab4c73d2c3189f56e2de181f00aa14bb9b605ba8981eb9f5bc04a91fbd8485ddf3]
+
+container:
+  image: herobuxx/ubuntu:22.04
+  cpu: 8
+  memory: 32G
+
+build_task:
+  name: Building Toolchain
+  timeout_in: 120m
+  script:
+    - apt-get update
+    - apt-get install -y build-essential curl git
+    - bash lilium_build.sh
