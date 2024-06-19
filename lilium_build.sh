@@ -55,7 +55,8 @@ echo "* Building LLVM..."
     --install-target distribution \
     --vendor-string "Lilium" \
     --bolt \
-    --defines LLVM_PARALLEL_COMPILE_JOBS=$(nproc --all) LLVM_PARALLEL_LINK_JOBS=$(nproc --all) CMAKE_C_FLAGS="-O2" CMAKE_CXX_FLAGS="-O2" \
+    --final \
+    --defines LLVM_PARALLEL_COMPILE_JOBS="${nproc}" LLVM_PARALLEL_LINK_JOBS="${nproc}" CMAKE_C_FLAGS="-O2" CMAKE_CXX_FLAGS="-O2" \
     --projects clang compiler-rt lld polly \
     --targets ARM AArch64 X86 \
     --lto thin \
@@ -63,7 +64,6 @@ echo "* Building LLVM..."
     --quiet-cmake \
     --install-folder "install" \
     --no-update | tee "${BUILD_LOG}"
-
 
 # Verify clang get built
 [ ! -f install/bin/clang* ] && {
